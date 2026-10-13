@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Call Copilot</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar" id="topbar">
+    <div class="topbar-main">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span class="brand-name">Call Copilot</span>
+      </div>
+
+      <div class="status" id="status" data-state="idle">
+        <span class="status-dot"></span>
+        <span class="status-text" id="statusText">Idle</span>
+      </div>
+
+      <div class="level" id="level" title="Your microphone level"><span></span></div>
+      <div class="level level-far" id="levelFar" title="Call audio level (them)" hidden><span></span></div>
+
+      <input id="sessionName" class="session-name" type="text" autocomplete="off"
+             placeholder="Name this interview…" title="Saved under this name when you press Stop" />
+
+      <button class="btn btn-primary" id="startStop">Start</button>
+
+      <div class="seg" role="group" aria-label="Answer mode">
+        <button class="seg-item is-active" data-mode="auto">Auto</button>
+        <button class="seg-item" data-mode="manual">Manual</button>
+      </div>
+
+      <button class="btn" id="answerNow" title="Answer the latest question (⌘↵)">Answer</button>
+      <button class="btn" id="regenerate" title="Re-answer the last question with current settings (⌘R)">Regenerate</button>
+      <div class="menu-wrap desktop-only" id="readWrap">
+        <button class="btn" id="readBtn" aria-haspopup="true" aria-expanded="false" title="Read a question off the screen">Read ▾</button>
+        <div class="menu" id="readMenu" hidden role="menu">
+          <div class="menu-head" id="readMenuHead">No screen chosen</div>
+          <button type="button" class="menu-item" id="readRegion" role="menuitem">
+            <span>Snip a region</span><kbd>⌘⇧A</kbd>
+            <em>Drag a box around just the question</em>
+          </button>
+          <button type="button" class="menu-item" id="readScreen" role="menuitem">
+            <span>Whole screen</span><kbd>⌘⇧R</kbd>
+            <em>Send everything on the chosen screen</em>
+          </button>
+          <div class="menu-sep"></div>
+          <button type="button" class="menu-item" id="readChange" role="menuitem">
+            <span>Change screen…</span>
+            <em>Pick a different display or window</em>
+          </button>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <button class="btn btn-ghost desktop-only" id="overlayBtn" title="Float the answers over whatever you are looking at (⌘⇧O)">Overlay</button>
+      <button class="btn btn-ghost desktop-only" id="pinBtn" title="Keep window above other apps">Pin</button>
+      <button class="btn btn-ghost desktop-only is-on" id="hideBtn" title="Hide this window from screen sharing and recordings">Hidden from share</button>
+      <button class="btn btn-ghost" id="sessionsBtn" title="Saved interviews">Interviews</button>
+      <button class="btn btn-ghost" id="keysBtn" title="API keys">Keys</button>
+      <button class="btn btn-ghost" id="toggleControls" aria-expanded="false">Controls ▾</button>
+    </div>
+
+    <section class="controls" id="controls" hidden>
+      <div class="control-grid">
+        <label class="control">
+          <span class="control-label">Detail level</span>
+          <div class="seg seg-wide" data-setting="detail">
+            <button class="seg-item" data-value="brief">Brief</button>
+            <button class="seg-item is-active" data-value="balanced">Balanced</button>
+            <button class="seg-item" data-value="detailed">Detailed</button>
+          </div>
+        </label>
+
+        <label class="control">
+          <span class="control-label">Style</span>
+          <div class="seg seg-wide" data-setting="style">
+            <button class="seg-item is-active" data-value="precise">Precise</button>
+            <button class="seg-item" data-value="conversational">Conversational</button>
+            <button class="seg-item" data-value="technical">Technical</button>
+          </div>
+        </label>
+
+        <label class="control">
+          <span class="control-label">Technical depth</span>
+          <div class="seg seg-wide" data-setting="depth">
+            <button class="seg-item" data-value="high-level">High-level</button>
+            <button class="seg-item is-active" data-value="intermediate">Intermediate</button>
+            <button class="seg-item" data-value="deep">Deep</button>
+          </div>
+        </label>
+
+        <label class="control">
+          <span class="control-label">Spoken language</span>
+          <select id="sttLanguage" class="select"></select>
+        </label>
+
+        <label class="control">
+          <span class="control-label">Answer in</span>
+          <select id="answerLanguage" class="select"></select>
+        </label>
+
+        <label class="control">
+          <span class="control-label">Transcription</span>
+          <div class="seg seg-wide" data-setting="sttProvider">
+            <button class="seg-item is-active" data-value="deepgram">Deepgram</button>
+            <button class="seg-item" data-value="openai">OpenAI</button>
+          </div>
+        </label>
+
+        <label class="control">
+          <span class="control-label">Answers</span>
+          <div class="seg seg-wide" data-setting="answerProvider">
+            <button class="seg-item is-active" data-value="anthropic">Anthropic</button>
+            <button class="seg-item" data-value="openai">OpenAI</button>
+            <button class="seg-item" data-value="nova" title="Amazon Nova via AWS Bedrock">Nova</button>
+            <button class="seg-item" data-value="ollama" title="Local model via Ollama — no key, no cost">Local</button>
+          </div>
+        </label>
+
+        <label class="control">
+          <span class="control-label">Model</span>
+          <select id="modelSelect" class="select"></select>
+        </label>
+
+        <label class="control">
+          <span class="control-label">Auto-answer after pause <em id="pauseValue">2.0s</em></span>
+          <input type="range" id="pauseMs" min="500" max="6000" step="250" value="2000" />
+        </label>
+
+        <label class="control">
+          <span class="control-label">Audio source</span>
+          <div class="seg seg-wide" data-setting="source">
+            <button class="seg-item" data-value="system" title="Only the other person — your own voice is never captured">Them only</button>
+            <button class="seg-item" data-value="mic" title="Only your microphone">Mic only</button>
+            <button class="seg-item" data-value="both" title="Both, transcribed as separate speakers">Both</button>
+          </div>
+        </label>
+
+        <label class="control desktop-only-control" id="screenControl">
+          <span class="control-label">Screen to read</span>
+          <div class="screen-pick">
+            <span class="screen-current" id="screenCurrent">Not chosen</span>
+            <button type="button" class="btn btn-small" id="screenChoose">Choose…</button>
+          </div>
+        </label>
+
+        <label class="control control-check desktop-only-control" id="dockControl">
+          <input type="checkbox" id="hideDock" />
+          <span title="Removes the icon from the Dock and from ⌘Tab. Bring the window back with ⌃⌥C.">Hide from Dock &amp; app switcher</span>
+        </label>
+
+        <label class="control control-check">
+          <input type="checkbox" id="rawMic" />
+          <span title="Turns off echo cancellation, noise suppression and auto gain. Try this if quiet speech goes missing.">Raw mic (no noise suppression)</span>
+        </label>
+
+        <label class="control control-wide">
+          <span class="control-label">About me — role, background, product context</span>
+          <textarea id="about" rows="3" placeholder="Senior backend engineer, 8 years, mostly Go and Postgres. Currently interviewing for a payments infra role. Led the migration of our ledger to event sourcing."></textarea>
+        </label>
+
+        <label class="control control-wide">
+          <span class="control-label">Job description &mdash; the role you are interviewing for</span>
+          <textarea id="role" rows="3" placeholder="Paste the job ad. Senior Backend Engineer, Payments. Go, Postgres, Kafka. Owns the ledger service end to end. Wants someone who has scaled event-driven systems and mentored engineers."></textarea>
+        </label>
+      </div>
+    </section>
+  </header>
+
+  <div class="banner-stack" id="banners"></div>
+
+  <main class="panes">
+    <section class="pane pane-transcript">
+      <div class="pane-head">
+        <h2>Transcript</h2>
+        <div class="pane-actions">
+          <span class="hint" id="selectionHint" hidden>Selection ready</span>
+          <button class="btn btn-small" id="answerSelection" hidden>Answer this</button>
+          <button class="btn btn-small btn-ghost" id="clearTranscript">Clear</button>
+        </div>
+      </div>
+      <div class="pane-body" id="transcript">
+        <p class="empty">Press Start and begin the call. Speech shows up here as it is recognised.</p>
+      </div>
+    </section>
+
+    <section class="pane pane-answers">
+      <div class="pane-head">
+        <h2>Answers</h2>
+        <div class="pane-actions">
+          <button class="btn btn-small btn-ghost" id="showUsage" title="Tokens used and estimated cost this session">Usage</button>
+          <button class="btn btn-small btn-ghost" id="showContext" title="See exactly what context is sent with the next answer">Context</button>
+          <button class="btn btn-small btn-ghost" id="clearAnswers">Clear</button>
+        </div>
+      </div>
+      <form class="reply-bar" id="replyForm">
+        <input id="replyInput" type="text" autocomplete="off"
+               placeholder="Reply — “make it shorter”, “go deeper on the Redis part”, or ask anything…" />
+        <button type="submit" class="btn btn-primary btn-small" id="replySend">Ask</button>
+      </form>
+
+      <div class="pane-body" id="answers">
+        <p class="empty">Answers stream in here. In Auto mode a question in the transcript triggers one; in Manual mode use the Answer button.</p>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="modal modal-wide" id="viewModal">
+    <form method="dialog" class="modal-form" id="viewForm">
+      <h3 class="modal-title" id="viewTitle">Interview</h3>
+      <p class="modal-sub" id="viewMeta"></p>
+      <div class="view-body" id="viewBody"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="viewDownload">Save as…</button>
+        <button type="button" class="btn btn-ghost" id="viewUse">Use as base</button>
+        <button type="button" class="btn btn-ghost" id="viewClose">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-wide" id="sessionsModal">
+    <form method="dialog" class="modal-form" id="sessionsForm">
+      <h3 class="modal-title">Saved interviews</h3>
+      <p class="modal-sub">
+        Pick one as the base for this call and the model is told what that round covered,
+        so a second interview can build on the first instead of starting cold.
+      </p>
+      <div class="session-list" id="sessionList"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost danger" id="sessionsClearAll">Delete all</button>
+        <button type="button" class="btn btn-ghost" id="sessionsRefresh">Refresh</button>
+        <button type="button" class="btn btn-ghost" id="sessionsClose">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-wide" id="usageModal">
+    <form method="dialog" class="modal-form" id="usageForm">
+      <h3 class="modal-title">Usage this session</h3>
+      <p class="modal-sub">
+        Token counts are reported by each provider. Costs are an estimate from published list prices —
+        useful for sizing a session, not a substitute for your provider's billing page.
+      </p>
+      <div id="usageView"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="usageReset">Reset counters</button>
+        <button type="button" class="btn btn-ghost" id="usageClose">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-wide" id="contextModal">
+    <form method="dialog" class="modal-form" id="contextForm">
+      <h3 class="modal-title">What the model will be told</h3>
+      <p class="modal-sub">
+        Exactly what goes out with your next answer — nothing else is remembered between answers.
+      </p>
+      <div class="context-view" id="contextView"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost danger" id="contextClear">Clear context</button>
+        <button type="button" class="btn btn-ghost" id="contextRefresh">Refresh</button>
+        <button type="button" class="btn btn-ghost" id="contextClose">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-wide" id="screenModal">
+    <form method="dialog" class="modal-form" id="screenForm">
+      <h3 class="modal-title">Which screen should I read?</h3>
+      <p class="modal-sub">
+        Pick a display or a window. "Read screen" captures it and answers whatever question is on it —
+        a coding task, a shared doc, a multiple-choice prompt. Call Copilot's own windows are excluded.
+      </p>
+      <div class="screen-grid" id="screenGrid"><p class="ov-empty">Loading…</p></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="screenRefresh">Refresh</button>
+        <button type="button" class="btn btn-ghost" id="screenCancel">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="keysModal">
+    <form method="dialog" class="modal-form" id="keysForm">
+      <h3 class="modal-title">API keys</h3>
+      <p class="modal-sub">
+        Stored on this machine by the local backend and used only for its own outbound calls.
+        They are never sent to the page and never leave your Mac except to the provider you pick.
+        You only need the keys for the providers you actually use.
+      </p>
+
+      <label class="field">
+        <span class="field-label">
+          Deepgram — transcription
+          <a href="https://console.deepgram.com" target="_blank" rel="noreferrer">get a key</a>
+        </span>
+        <input type="password" id="keyDeepgram" autocomplete="off" spellcheck="false" placeholder="Paste key" />
+        <span class="field-state" id="stateDeepgram"></span>
+      </label>
+
+      <label class="field">
+        <span class="field-label">
+          Anthropic — answers
+          <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">get a key</a>
+        </span>
+        <input type="password" id="keyAnthropic" autocomplete="off" spellcheck="false" placeholder="sk-ant-..." />
+        <span class="field-state" id="stateAnthropic"></span>
+      </label>
+
+      <label class="field">
+        <span class="field-label">
+          OpenAI — answers and/or transcription
+          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer">get a key</a>
+        </span>
+        <input type="password" id="keyOpenai" autocomplete="off" spellcheck="false" placeholder="sk-..." />
+        <span class="field-state" id="stateOpenai"></span>
+      </label>
+
+      <fieldset class="field-group">
+        <legend>Amazon Nova — answers via AWS Bedrock</legend>
+        <label class="field">
+          <span class="field-label">Access key ID</span>
+          <input type="password" id="keyNovaId" autocomplete="off" spellcheck="false" placeholder="AKIA..." />
+          <span class="field-state" id="stateNovaAccessKeyId"></span>
+        </label>
+        <label class="field">
+          <span class="field-label">Secret access key</span>
+          <input type="password" id="keyNovaSecret" autocomplete="off" spellcheck="false" placeholder="Paste secret" />
+          <span class="field-state" id="stateNovaSecretAccessKey"></span>
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">Region</span>
+            <input type="text" id="keyNovaRegion" autocomplete="off" spellcheck="false" placeholder="us-east-1" />
+          </label>
+          <label class="field">
+            <span class="field-label">Model ID</span>
+            <input type="text" id="keyNovaModel" autocomplete="off" spellcheck="false" placeholder="amazon.nova-lite-v1:0" />
+          </label>
+        </div>
+      </fieldset>
+
+      <p class="modal-result" id="keysResult" hidden></p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="keysCancel">Close</button>
+        <button type="button" class="btn btn-primary" id="keysSave">Save &amp; test</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Call Copilot — Overlay</title>
+<link rel="stylesheet" href="overlay.css" />
+</head>
+<body class="overlay">
+  <header class="ov-bar" id="ovBar">
+    <span class="ov-status" id="ovStatus" data-state="idle"><i></i><span id="ovStatusText">Idle</span></span>
+    <span class="ov-spacer"></span>
+    <button class="ov-btn" id="ovControls" title="Answer controls">Controls</button>
+    <button class="ov-btn ov-shield is-on" id="ovShield" title="Hidden from screen sharing and recordings">Hidden</button>
+    <button class="ov-btn" id="ovTranscript" title="Show or hide the transcript">Transcript</button>
+    <button class="ov-btn" id="ovClick" title="Let clicks pass through to the app underneath">Lock</button>
+    <button class="ov-btn" id="ovFade" title="Cycle opacity">Fade</button>
+    <button class="ov-btn ov-close" id="ovClose" title="Close overlay">✕</button>
+  </header>
+
+  <section class="ov-panel" id="ovControlsPane" hidden>
+    <div class="ov-actions">
+      <button type="button" class="ov-act" id="ovSession">Start</button>
+      <button type="button" class="ov-act" id="ovAnswer">Answer now</button>
+      <button type="button" class="ov-act" id="ovRegen">Regenerate</button>
+    </div>
+
+    <div class="ov-row"><span>Mode</span>
+      <div class="ov-seg" data-key="mode">
+        <button type="button" data-value="auto">Auto</button>
+        <button type="button" data-value="manual">Manual</button>
+      </div>
+    </div>
+
+    <div class="ov-row"><span>Length</span>
+      <div class="ov-seg" data-key="detail">
+        <button type="button" data-value="brief">Brief</button>
+        <button type="button" data-value="balanced">Balanced</button>
+        <button type="button" data-value="detailed">Detailed</button>
+      </div>
+    </div>
+
+    <div class="ov-row"><span>Depth</span>
+      <div class="ov-seg" data-key="depth">
+        <button type="button" data-value="high-level">High</button>
+        <button type="button" data-value="intermediate">Mid</button>
+        <button type="button" data-value="deep">Deep</button>
+      </div>
+    </div>
+
+    <div class="ov-row"><span>Style</span>
+      <div class="ov-seg" data-key="style">
+        <button type="button" data-value="precise">Precise</button>
+        <button type="button" data-value="conversational">Natural</button>
+        <button type="button" data-value="technical">Technical</button>
+      </div>
+    </div>
+
+    <div class="ov-row"><span>Answers</span>
+      <select class="ov-select" id="ovProvider"></select>
+    </div>
+
+    <div class="ov-row"><span>Model</span>
+      <select class="ov-select" id="ovModel"></select>
+    </div>
+
+    <div class="ov-sep"></div>
+
+    <div class="ov-row"><span>Read</span>
+      <div class="ov-actions ov-actions-tight">
+        <button type="button" class="ov-act" id="ovSnip" title="Drag a box around the question">Snip</button>
+        <button type="button" class="ov-act" id="ovWhole" title="Send the whole chosen screen">Whole screen</button>
+        <button type="button" class="ov-act" id="ovPick" title="Choose a different display or window">Change…</button>
+      </div>
+    </div>
+
+    <div class="ov-row"><span>Screen</span>
+      <span class="ov-value" id="ovScreenName">not chosen</span>
+    </div>
+
+    <div class="ov-sep"></div>
+
+    <div class="ov-row"><span>Audio</span>
+      <div class="ov-seg" data-key="source">
+        <button type="button" data-value="system">Them</button>
+        <button type="button" data-value="mic">Mic</button>
+        <button type="button" data-value="both">Both</button>
+      </div>
+    </div>
+
+    <div class="ov-row"><span>Spoken</span>
+      <select class="ov-select" id="ovSttLang"></select>
+    </div>
+
+    <div class="ov-row"><span>Answer in</span>
+      <select class="ov-select" id="ovAnsLang"></select>
+    </div>
+
+    <div class="ov-row"><span>Speech</span>
+      <div class="ov-seg" data-key="sttProvider">
+        <button type="button" data-value="deepgram">Deepgram</button>
+        <button type="button" data-value="openai">OpenAI</button>
+      </div>
+    </div>
+
+    <div class="ov-row"><span>Pause</span>
+      <input class="ov-range" id="ovPause" type="range" min="500" max="6000" step="250" />
+      <span class="ov-value ov-value-num" id="ovPauseValue">2.0s</span>
+    </div>
+  </section>
+
+  <section class="ov-transcript" id="ovTranscriptPane" hidden></section>
+
+  <main class="ov-body" id="ovBody">
+    <p class="ov-empty">Answers appear here, on top of whatever you are looking at.</p>
+  </main>
+
+  <form class="ov-reply" id="ovReplyForm">
+    <input id="ovReply" type="text" placeholder="Reply — make it shorter, go deeper, ask something…" autocomplete="off" />
+    <button type="submit" class="ov-send" id="ovSend" title="Send (Enter)">Ask</button>
+  </form>
+
+  <script type="module" src="overlay.js"></script>
+</body>
+</html>

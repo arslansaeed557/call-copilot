@@ -1,0 +1,67 @@
+{
+  "name": "call-copilot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Real-time answer assistant for calls and interviews",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "web": "node server/standalone.js",
+    "dist": "electron-builder --mac"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1134.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "openai": "^7.15.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.local.callcopilot",
+    "productName": "Call Copilot",
+    "files": [
+      "electron/**",
+      "server/**",
+      "public/**",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Call Copilot listens to your microphone to transcribe the conversation.",
+        "NSCameraUsageDescription": "Not used.",
+        "NSScreenCaptureUsageDescription": "Call Copilot captures system audio so it can transcribe the other participants."
+      },
+      "icon": "build/icon.icns",
+      "identity": null,
+      "hardenedRuntime": false
+    },
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "dmg": {
+      "title": "Call Copilot",
+      "artifactName": "Call-Copilot-${version}-${arch}.${ext}"
+    }
+  }
+}

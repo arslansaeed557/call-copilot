@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Select a region</title>
+<link rel="stylesheet" href="region.css" />
+</head>
+<body>
+  <img id="frame" alt="" draggable="false" />
+  <div class="shade" id="shade"></div>
+  <div class="sel" id="sel" hidden><span class="dims" id="dims"></span></div>
+
+  <div class="hint" id="hint">
+    <strong>Drag to select the question</strong>
+    <span>Enter to send · Esc to cancel</span>
+  </div>
+
+  <div class="ask" id="ask" hidden>
+    <input id="note" type="text" placeholder="Optional: what do you want? e.g. solve it, explain the error, write the SQL" />
+    <button class="go" id="go">Answer this</button>
+    <button class="cancel" id="cancel">Cancel</button>
+  </div>
+
+  <script type="module" src="region.js"></script>
+</body>
+</html>
